@@ -832,41 +832,63 @@
     /* ══ 폰트 대기 ══ */
     function waitTypekit(){return new Promise(resolve=>{if(typeof Typekit!=='undefined'){resolve();return;}let tries=0;const iv=setInterval(()=>{tries++;if(typeof Typekit!=='undefined'||tries>60){clearInterval(iv);resolve();}},100);});}
 
-    // measureText는 폰트가 "등록"만 돼도 값이 달라져서 오탐이 생김.
-    // 실제 canvas에 픽셀을 그려서 폴백 폰트와 픽셀 데이터가 다른지 비교해야
-    // "진짜 렌더링 가능한 상태"를 보장할 수 있음.
-    function isFontRenderable(font, weight) {
-      const SIZE = 32, TEXT = '개디도';
-      const c = document.createElement('canvas');
-      c.width = SIZE * 4; c.height = SIZE + 4;
-      const ctx = c.getContext('2d');
+    // Typekit은 청크 단위로 폰트를 받아오므로 "완료" 시점을 직접 알 수 없음.
+    // 전략: 모든 한글 범위를 DOM에 렌더링해 청크 요청을 먼저 다 유발시킨 뒤,
+    //       loadingdone 이벤트가 SILENCE_MS 동안 오지 않으면 완료로 판단.
+    function waitFonts() {
+      return new Promise(resolve => {
+        const SILENCE_MS = 800; // 마지막 청크 도착 후 이 시간 동안 조용하면 완료
+        const TIMEOUT_MS = 15000; // 최대 대기 (네트워크 이상 등 방어)
 
-      ctx.font = (weight||'normal') + ' ' + SIZE + 'px sans-serif';
-      ctx.fillText(TEXT, 0, SIZE);
-      const fallback = ctx.getImageData(0, 0, c.width, c.height).data;
+        // 1단계: 한글 전 범위를 DOM에 렌더링해 Typekit이 모든 청크를 fetch하게 유발.
+        // visibility:hidden은 브라우저가 레이아웃을 건너뛰어 글리프 fetch가 안 될 수 있으므로
+        // opacity:0 + 화면 밖 position으로 처리. 전체 11,172자를 다 넣어야 모든 청크 커버.
+        const warm = document.createElement('div');
+        warm.setAttribute('aria-hidden', 'true');
+        warm.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;font-size:20px;white-space:nowrap;overflow:hidden;width:1px;height:1px;';
 
-      ctx.clearRect(0, 0, c.width, c.height);
-      ctx.font = (weight||'normal') + ' ' + SIZE + 'px "' + font + '", sans-serif';
-      ctx.fillText(TEXT, 0, SIZE);
-      const target = ctx.getImageData(0, 0, c.width, c.height).data;
+        // 가~힣 전체 (AC00~D7A3) — 샘플링 없이 전부
+        let allHangul = '';
+        for (let cp = 0xAC00; cp <= 0xD7A3; cp++) allHangul += String.fromCodePoint(cp);
+        // 자음·모음 (3131~3163) 전체
+        for (let cp = 0x3131; cp <= 0x3163; cp++) allHangul += String.fromCodePoint(cp);
 
-      for (let i = 0; i < fallback.length; i++) {
-        if (fallback[i] !== target[i]) return true;
-      }
-      return false;
-    }
-    async function waitFontReady(font, weight, maxMs=8000) {
-      if (!font) return;
-      const start = Date.now();
-      while (!isFontRenderable(font, weight)) {
-        if (Date.now() - start > maxMs) break;
-        await new Promise(r => setTimeout(r, 50));
-      }
-    }
-    async function waitFonts(){const seen=new Set();const loads=[];Object.values(config.textStyles).forEach(s=>{if(s&&s.font&&!seen.has(s.font)){seen.add(s.font);loads.push(document.fonts.load(s.weight+' 32px "'+s.font+'"').catch(()=>{}));}});await document.fonts.ready;await Promise.all(loads);const warm=document.createElement('div');warm.style.cssText='position:fixed;top:-9999px;left:-9999px;opacity:0;pointer-events:none;';Object.values(config.textStyles).forEach(s=>{if(s&&s.font){const sp=document.createElement('span');sp.style.fontFamily='"'+s.font+'"';sp.style.fontWeight=s.weight||'normal';sp.style.fontSize='32px';sp.textContent='가나다라마바사아자차카타파하ㄱㄴㄷㄹㅁㅂㅅㅇㅈㅊㅋㅌㅍㅎ더워줘봐돼해쉬쥐줘봐돼봄봄봄봄봄봄봄봄ABC0123456789';warm.appendChild(sp);}});document.body.appendChild(warm);await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));document.body.removeChild(warm);
-      // 픽셀 비교로 실제 렌더링 가능 상태까지 대기
-      await waitFontReady('cheoeumcheoreom-210', 'bold');
-      await waitFontReady('Rebecca', 'normal');
+        const fontsSeen = new Set();
+        Object.values(config.textStyles).forEach(s => {
+          if (!s || !s.font || fontsSeen.has(s.font + s.weight)) return;
+          fontsSeen.add(s.font + s.weight);
+          const sp = document.createElement('span');
+          sp.style.cssText = 'font-family:"' + s.font + '",sans-serif;font-weight:' + (s.weight||'normal') + ';';
+          sp.textContent = allHangul;
+          warm.appendChild(sp);
+        });
+        document.body.appendChild(warm);
+
+        // 2단계: silence 타이머 — loadingdone이 올 때마다 리셋, 조용해지면 완료
+        let silenceTimer = null;
+        let globalTimer = null;
+
+        function done() {
+          clearTimeout(silenceTimer);
+          clearTimeout(globalTimer);
+          document.fonts.removeEventListener('loadingdone', onLoadingDone);
+          document.body.removeChild(warm);
+          resolve();
+        }
+
+        function resetSilenceTimer() {
+          clearTimeout(silenceTimer);
+          silenceTimer = setTimeout(done, SILENCE_MS);
+        }
+
+        function onLoadingDone() {
+          resetSilenceTimer();
+        }
+
+        document.fonts.addEventListener('loadingdone', onLoadingDone);
+        globalTimer = setTimeout(done, TIMEOUT_MS); // 최대 대기 보장
+        resetSilenceTimer(); // 초기 타이머 시작 (이벤트가 아예 안 와도 SILENCE_MS 후 완료)
+      });
     }
 
     /* ══ 시간 텍스트 토글 ══ */
