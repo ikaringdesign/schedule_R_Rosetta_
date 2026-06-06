@@ -357,9 +357,9 @@
         tue: { dateOn:[242,68], dateOff:[242,68], title:[242,200], sub:[242,317], time:[242,402], icon:[401,70], amPm:[69,96] },
         wed: { dateOn:[242,68], dateOff:[242,68], title:[242,200], sub:[242,317], time:[242,402], icon:[401,70], amPm:[69,96] },
         thu: { dateOn:[242,68], dateOff:[242,68], title:[242,200], sub:[242,317], time:[242,402], icon:[401,70], amPm:[69,96] },
-        fri: { dateOn:[294,68], dateOff:[294,68], title:[294,195], sub:[294,298], time:[294,367], icon:[509,67], amPm:[69,96] },
-        sat: { dateOn:[294,68], dateOff:[294,68], title:[294,195], sub:[294,298], time:[294,367], icon:[509,67], amPm:[69,96] },
-        sun: { dateOn:[294,68], dateOff:[294,68], title:[294,195], sub:[294,298], time:[294,367], icon:[509,67], amPm:[69,96] }
+        fri: { dateOn:[242,68], dateOff:[242,68], title:[294,195], sub:[294,298], time:[294,367], icon:[509,67], amPm:[69,96] },
+        sat: { dateOn:[242,68], dateOff:[242,68], title:[294,195], sub:[294,298], time:[294,367], icon:[509,67], amPm:[69,96] },
+        sun: { dateOn:[242,68], dateOff:[242,68], title:[294,195], sub:[294,298], time:[294,367], icon:[509,67], amPm:[69,96] }
       },
       topDateCoords: { startMonth:[775,1052], startDate:[873,1052], endMonth:[1127,1052], endDate:[1225,1052] },
       dateRangeStartCoords: [273,289], dateRangeEndCoords: [513,289],
@@ -605,11 +605,12 @@
       if (body) {
         const center = body.querySelector('.day-col-center');
         const right  = body.querySelector('.day-col-right');
-        if (center) center.style.visibility = on?'visible':'hidden';
-        if (right)  right.style.visibility  = on?'visible':'hidden';
+        if (center) { center.style.visibility = on?'visible':'hidden'; center.style.pointerEvents = on?'auto':'none'; }
+        if (right)  { right.style.visibility  = on?'visible':'hidden'; right.style.pointerEvents  = on?'auto':'none'; }
       }
       const offline = document.getElementById(day+'_offline');
       offline.style.visibility = on?'hidden':'visible';
+      offline.style.pointerEvents = on?'none':'auto';
       drawSchedule();
     }
 
@@ -829,7 +830,29 @@
 
     /* ══ 폰트 대기 ══ */
     function waitTypekit(){return new Promise(resolve=>{if(typeof Typekit!=='undefined'){resolve();return;}let tries=0;const iv=setInterval(()=>{tries++;if(typeof Typekit!=='undefined'||tries>60){clearInterval(iv);resolve();}},100);});}
-    async function waitFonts(){const seen=new Set();const loads=[];Object.values(config.textStyles).forEach(s=>{if(s&&s.font&&!seen.has(s.font)){seen.add(s.font);loads.push(document.fonts.load(s.weight+' 32px "'+s.font+'"').catch(()=>{}));}});await document.fonts.ready;await Promise.all(loads);const warm=document.createElement('div');warm.style.cssText='position:fixed;top:-9999px;left:-9999px;opacity:0;pointer-events:none;';Object.values(config.textStyles).forEach(s=>{if(s&&s.font){const sp=document.createElement('span');sp.style.fontFamily='"'+s.font+'"';sp.style.fontWeight=s.weight||'normal';sp.style.fontSize='32px';sp.textContent='가나다ABC';warm.appendChild(sp);}});document.body.appendChild(warm);await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));document.body.removeChild(warm);}
+    function isFontLoaded(font, weight) {
+      // 폴백 폰트(sans-serif)로 측정한 너비와 다르면 폰트 로드된 것
+      const test = '더ㄱ워줘봐돼해쉬쥐';
+      const c = document.createElement('canvas').getContext('2d');
+      c.font = (weight||'normal') + ' 32px sans-serif';
+      const w1 = c.measureText(test).width;
+      c.font = (weight||'normal') + ' 32px "' + font + '", sans-serif';
+      const w2 = c.measureText(test).width;
+      return w1 !== w2;
+    }
+    async function waitFontReady(font, weight, maxMs=3000) {
+      if (!font) return;
+      const start = Date.now();
+      while (!isFontLoaded(font, weight)) {
+        if (Date.now() - start > maxMs) break;
+        await new Promise(r => setTimeout(r, 50));
+      }
+    }
+    async function waitFonts(){const seen=new Set();const loads=[];Object.values(config.textStyles).forEach(s=>{if(s&&s.font&&!seen.has(s.font)){seen.add(s.font);loads.push(document.fonts.load(s.weight+' 32px "'+s.font+'"').catch(()=>{}));}});await document.fonts.ready;await Promise.all(loads);const warm=document.createElement('div');warm.style.cssText='position:fixed;top:-9999px;left:-9999px;opacity:0;pointer-events:none;';Object.values(config.textStyles).forEach(s=>{if(s&&s.font){const sp=document.createElement('span');sp.style.fontFamily='"'+s.font+'"';sp.style.fontWeight=s.weight||'normal';sp.style.fontSize='32px';sp.textContent='가나다라마바사아자차카타파하ㄱㄴㄷㄹㅁㅂㅅㅇㅈㅊㅋㅌㅍㅎ더워줘봐돼해쉬쥐줘봐돼봄봄봄봄봄봄봄봄ABC0123456789';warm.appendChild(sp);}});document.body.appendChild(warm);await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));document.body.removeChild(warm);
+      // 핵심 폰트가 실제로 렌더링 가능한 상태인지 추가 대기
+      await waitFontReady('cheoeumcheoreom-210', 'bold');
+      await waitFontReady('Rebecca', 'normal');
+    }
 
     /* ══ 시간 텍스트 토글 ══ */
     function toggleTimeInput(day){
@@ -844,7 +867,7 @@
 
     /* ══ 이미지 저장 ══ */
     async function downloadImage(){
-      try{await drawSchedule();const link=document.createElement('a');link.download='weeklyschedule_Rosetta.png';link.href=canvas.toDataURL('image/png');link.click();}
+      try{await drawSchedule();const link=document.createElement('a');link.download='weekly_schedule_fhd.png';link.href=canvas.toDataURL('image/png');link.click();}
       catch{alert("이미지 저장 실패!\nVS Code에서 Live Server로 열어주세요!");}
     }
 
