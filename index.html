@@ -357,9 +357,9 @@
         tue: { dateOn:[242,68], dateOff:[242,68], title:[242,200], sub:[242,317], time:[242,402], icon:[401,70], amPm:[69,96] },
         wed: { dateOn:[242,68], dateOff:[242,68], title:[242,200], sub:[242,317], time:[242,402], icon:[401,70], amPm:[69,96] },
         thu: { dateOn:[242,68], dateOff:[242,68], title:[242,200], sub:[242,317], time:[242,402], icon:[401,70], amPm:[69,96] },
-        fri: { dateOn:[242,68], dateOff:[242,68], title:[294,195], sub:[294,298], time:[294,367], icon:[509,67], amPm:[69,96] },
-        sat: { dateOn:[242,68], dateOff:[242,68], title:[294,195], sub:[294,298], time:[294,367], icon:[509,67], amPm:[69,96] },
-        sun: { dateOn:[242,68], dateOff:[242,68], title:[294,195], sub:[294,298], time:[294,367], icon:[509,67], amPm:[69,96] }
+        fri: { dateOn:[294,68], dateOff:[294,68], title:[294,195], sub:[294,298], time:[294,367], icon:[509,67], amPm:[69,96] },
+        sat: { dateOn:[294,68], dateOff:[294,68], title:[294,195], sub:[294,298], time:[294,367], icon:[509,67], amPm:[69,96] },
+        sun: { dateOn:[294,68], dateOff:[294,68], title:[294,195], sub:[294,298], time:[294,367], icon:[509,67], amPm:[69,96] }
       },
       topDateCoords: { startMonth:[775,1052], startDate:[873,1052], endMonth:[1127,1052], endDate:[1225,1052] },
       dateRangeStartCoords: [273,289], dateRangeEndCoords: [513,289],
@@ -867,7 +867,7 @@
 
     /* ══ 이미지 저장 ══ */
     async function downloadImage(){
-      try{await drawSchedule();const link=document.createElement('a');link.download='weekly_schedule_fhd.png';link.href=canvas.toDataURL('image/png');link.click();}
+      try{await drawSchedule();const link=document.createElement('a');link.download='weeklyschedule_rosetta.png';link.href=canvas.toDataURL('image/png');link.click();}
       catch{alert("이미지 저장 실패!\nVS Code에서 Live Server로 열어주세요!");}
     }
 
