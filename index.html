@@ -458,7 +458,7 @@
     /* ══ Canvas ══ */
     const canvas = document.getElementById('previewCanvas');
     const ctx = canvas.getContext('2d');
-    let uploadedIllust=null, illustBase64=null, isDrawing=false, needsRedraw=false;
+    let uploadedIllust=null, illustBase64=null, isDrawing=false, needsRedraw=false, fontsReady=false;
     let weekData = { startMonth:"", startDate:"", endMonth:"", endDate:"", dayTexts:[] };
     let imgState = { scale:1, x:0, y:0, rotate:0, flipH:false, flipV:false, isDragging:false, dragStartX:0, dragStartY:0 };
     let initImgState = { scale:1, x:0, y:0 };
@@ -668,6 +668,7 @@
 
     /* ══ 메인 드로우 ══ */
     async function drawSchedule() {
+      if (!fontsReady) { needsRedraw=true; return; }
       if (isDrawing) { needsRedraw=true; return; }
       isDrawing = true;
       try {
@@ -830,26 +831,40 @@
 
     /* ══ 폰트 대기 ══ */
     function waitTypekit(){return new Promise(resolve=>{if(typeof Typekit!=='undefined'){resolve();return;}let tries=0;const iv=setInterval(()=>{tries++;if(typeof Typekit!=='undefined'||tries>60){clearInterval(iv);resolve();}},100);});}
-    function isFontLoaded(font, weight) {
-      // 폴백 폰트(sans-serif)로 측정한 너비와 다르면 폰트 로드된 것
-      const test = '더ㄱ워줘봐돼해쉬쥐';
-      const c = document.createElement('canvas').getContext('2d');
-      c.font = (weight||'normal') + ' 32px sans-serif';
-      const w1 = c.measureText(test).width;
-      c.font = (weight||'normal') + ' 32px "' + font + '", sans-serif';
-      const w2 = c.measureText(test).width;
-      return w1 !== w2;
+
+    // measureText는 폰트가 "등록"만 돼도 값이 달라져서 오탐이 생김.
+    // 실제 canvas에 픽셀을 그려서 폴백 폰트와 픽셀 데이터가 다른지 비교해야
+    // "진짜 렌더링 가능한 상태"를 보장할 수 있음.
+    function isFontRenderable(font, weight) {
+      const SIZE = 32, TEXT = '개디도';
+      const c = document.createElement('canvas');
+      c.width = SIZE * 4; c.height = SIZE + 4;
+      const ctx = c.getContext('2d');
+
+      ctx.font = (weight||'normal') + ' ' + SIZE + 'px sans-serif';
+      ctx.fillText(TEXT, 0, SIZE);
+      const fallback = ctx.getImageData(0, 0, c.width, c.height).data;
+
+      ctx.clearRect(0, 0, c.width, c.height);
+      ctx.font = (weight||'normal') + ' ' + SIZE + 'px "' + font + '", sans-serif';
+      ctx.fillText(TEXT, 0, SIZE);
+      const target = ctx.getImageData(0, 0, c.width, c.height).data;
+
+      for (let i = 0; i < fallback.length; i++) {
+        if (fallback[i] !== target[i]) return true;
+      }
+      return false;
     }
-    async function waitFontReady(font, weight, maxMs=3000) {
+    async function waitFontReady(font, weight, maxMs=8000) {
       if (!font) return;
       const start = Date.now();
-      while (!isFontLoaded(font, weight)) {
+      while (!isFontRenderable(font, weight)) {
         if (Date.now() - start > maxMs) break;
         await new Promise(r => setTimeout(r, 50));
       }
     }
     async function waitFonts(){const seen=new Set();const loads=[];Object.values(config.textStyles).forEach(s=>{if(s&&s.font&&!seen.has(s.font)){seen.add(s.font);loads.push(document.fonts.load(s.weight+' 32px "'+s.font+'"').catch(()=>{}));}});await document.fonts.ready;await Promise.all(loads);const warm=document.createElement('div');warm.style.cssText='position:fixed;top:-9999px;left:-9999px;opacity:0;pointer-events:none;';Object.values(config.textStyles).forEach(s=>{if(s&&s.font){const sp=document.createElement('span');sp.style.fontFamily='"'+s.font+'"';sp.style.fontWeight=s.weight||'normal';sp.style.fontSize='32px';sp.textContent='가나다라마바사아자차카타파하ㄱㄴㄷㄹㅁㅂㅅㅇㅈㅊㅋㅌㅍㅎ더워줘봐돼해쉬쥐줘봐돼봄봄봄봄봄봄봄봄ABC0123456789';warm.appendChild(sp);}});document.body.appendChild(warm);await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));document.body.removeChild(warm);
-      // 핵심 폰트가 실제로 렌더링 가능한 상태인지 추가 대기
+      // 픽셀 비교로 실제 렌더링 가능 상태까지 대기
       await waitFontReady('cheoeumcheoreom-210', 'bold');
       await waitFontReady('Rebecca', 'normal');
     }
@@ -877,7 +892,7 @@
       const saved=localStorage.getItem('scheduleDataFinal');
       if (saved) loadData();
       else ['mon','tue','wed','thu','fri','sat','sun'].forEach(day=>toggleInputs(day));
-      waitTypekit().then(()=>waitFonts()).then(()=>drawSchedule());
+      waitTypekit().then(()=>waitFonts()).then(()=>{ fontsReady=true; drawSchedule(); });
       document.querySelectorAll('.time-text-input').forEach(el=>{
         el.addEventListener('input',()=>{
           const day=el.id.replace('_timetext','');
