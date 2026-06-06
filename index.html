@@ -844,7 +844,7 @@
 
     /* ══ 이미지 저장 ══ */
     async function downloadImage(){
-      try{await drawSchedule();const link=document.createElement('a');link.download='weekly_schedule_fhd.png';link.href=canvas.toDataURL('image/png');link.click();}
+      try{await drawSchedule();const link=document.createElement('a');link.download='weeklyschedule_Rosetta.png';link.href=canvas.toDataURL('image/png');link.click();}
       catch{alert("이미지 저장 실패!\nVS Code에서 Live Server로 열어주세요!");}
     }
 
