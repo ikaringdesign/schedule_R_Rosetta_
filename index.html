@@ -72,8 +72,24 @@
     .day-label { font-size: 12px; font-weight: bold; color: #555; }
     .sat .day-label { color: #4477cc; } .sun .day-label { color: #cc4444; }
     .day-col-center { display: flex; flex-direction: column; flex: 1; gap: 6px; min-width: 0; }
-    .day-col-body { display: flex; flex: 1; gap: 12px; align-items: center; min-width: 0; }
+    .day-col-body { display: flex; flex: 1; gap: 12px; align-items: center; min-width: 0; position: relative; }
     .day-col-right { display: flex; flex-direction: column; width: 132px; gap: 6px; flex-shrink: 0; }
+
+    /* ── 모바일 ── */
+    @media (max-width: 600px) {
+      body { padding: 20px 12px; }
+      .card { padding: 16px 14px; }
+      .date-card { padding: 16px 14px; }
+      #weekPicker { font-size: 14px; padding: 10px 12px; }
+      .day-row { flex-wrap: wrap; gap: 8px; }
+      .day-col-left { width: 60px; }
+      .day-col-body { flex-direction: column; align-items: stretch; width: 100%; gap: 6px; }
+      .day-col-center { width: 100%; }
+      .day-col-right { width: 100%; flex-direction: row; gap: 6px; }
+      .time-ampm-row { flex: 1; }
+      .platform-select { flex: 1; }
+
+    }
     .day-input, .time-input, .platform-select { width: 100%; padding: 9px 12px; border: 1px solid #e8e8f0; border-radius: 8px; font-family: 'Malgun Gothic', sans-serif; font-size: 13px; color: #333; background: #fff; outline: none; }
     .sub-input { background: #fafafe; font-size: 12px; color: #777; }
     .time-input { text-align: center; }
@@ -97,7 +113,7 @@
     .drum-overlay { display: none; position: fixed; inset: 0; z-index: 9998; }
     .drum-overlay.open { display: block; }
     .platform-select { cursor: pointer; font-size: 12px; padding: 8px 6px; }
-    .offline-text { font-size: 12px; font-weight: bold; color: #cc4444; text-align: center; padding: 0; background: #fff5f5; border-radius: 8px; border: 1px dashed #ffcccc; display: none; align-items: center; justify-content: center; flex: 1; width: 100%; height: calc(9px*2 + 13px + 6px + 9px*2 + 25px); line-height: calc(9px*2 + 13px + 6px + 9px*2 + 25px); }
+    .offline-text { font-size: 12px; font-weight: bold; color: #cc4444; text-align: center; padding: 0; background: #fff5f5; border-radius: 8px; border: 1px dashed #ffcccc; display: flex; align-items: center; justify-content: center; flex: 1; width: 100%; visibility: hidden; position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
     .toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; }
     .toggle-switch input { display: none; }
     .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #ddd; transition: .25s; border-radius: 22px; }
@@ -585,19 +601,15 @@
 
     function toggleInputs(day) {
       const on = document.getElementById(day+'_type').checked;
-      document.getElementById(day).style.display = on?'block':'none';
-      document.getElementById(day+'_sub').style.display = on?'block':'none';
-      document.getElementById(day+'_platform').style.display = on?'block':'none';
-      const timebtn = document.getElementById(day+'_timebtn');
-      if (timebtn) timebtn.parentElement.style.display = on?'block':'none';
       const body = document.getElementById(day+'_offline').parentElement;
       if (body) {
         const center = body.querySelector('.day-col-center');
         const right  = body.querySelector('.day-col-right');
-        if (center) center.style.display = on?'flex':'none';
-        if (right)  right.style.display  = on?'flex':'none';
+        if (center) center.style.visibility = on?'visible':'hidden';
+        if (right)  right.style.visibility  = on?'visible':'hidden';
       }
-      document.getElementById(day+'_offline').style.display = on?'none':'flex';
+      const offline = document.getElementById(day+'_offline');
+      offline.style.visibility = on?'hidden':'visible';
       drawSchedule();
     }
 
@@ -832,7 +844,7 @@
 
     /* ══ 이미지 저장 ══ */
     async function downloadImage(){
-      try{await drawSchedule();const link=document.createElement('a');link.download='weeklyschedule_rosetta.png';link.href=canvas.toDataURL('image/png');link.click();}
+      try{await drawSchedule();const link=document.createElement('a');link.download='weekly_schedule_fhd.png';link.href=canvas.toDataURL('image/png');link.click();}
       catch{alert("이미지 저장 실패!\nVS Code에서 Live Server로 열어주세요!");}
     }
 
