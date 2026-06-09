@@ -216,6 +216,20 @@
       <div class="card">
         <div class="card-title">요일별 스케줄</div>
         <div class="form-hint">텍스트에 <b>//</b> 를 넣으면 줄바꿈이 됩니다</div>
+        <div class="form-hint" style="margin-top:6px;">텍스트 앞에 <b>[-n]</b> 과 <b>[+n]</b> 을 쓰면 n만큼 사이즈 조정이 가능합니다. <br> </div>
+        <div style="display:none;">
+          <div id="maxWidthPanel">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+              <label>월 <input type="number" id="mw_mon" min="50" max="2000" oninput="applyMaxWidth()"></label>
+              <label>화 <input type="number" id="mw_tue" min="50" max="2000" oninput="applyMaxWidth()"></label>
+              <label>수 <input type="number" id="mw_wed" min="50" max="2000" oninput="applyMaxWidth()"></label>
+              <label>목 <input type="number" id="mw_thu" min="50" max="2000" oninput="applyMaxWidth()"></label>
+              <label>금 <input type="number" id="mw_fri" min="50" max="2000" oninput="applyMaxWidth()"></label>
+              <label>토 <input type="number" id="mw_sat" min="50" max="2000" oninput="applyMaxWidth()"></label>
+              <label>일 <input type="number" id="mw_sun" min="50" max="2000" oninput="applyMaxWidth()"></label>
+            </div>
+          </div>
+        </div>
         <div id="daysContainer">
           <!-- 월요일 -->
           <div class="day-row mon">
@@ -341,7 +355,7 @@
         topDay:    { font:'cheoeumcheoreom-210', size:'54px', color:'#df6178', align:'center', weight:'bold' },
         dayDateOn: { font:'Rebecca', size:'60px', color:'#fffafa', align:'center', weight:'normal' },
         dayDateOff:{ font:'Rebecca', size:'60px', color:'#ffe9c0', align:'center', weight:'bold' },
-        mainTitle: { font:'cheoeumcheoreom-210', size:'40px', color:'#bb4c60', align:'center', weight:'bold', lineHeight:1.05 },
+        mainTitle: { font:'cheoeumcheoreom-210', size:'45px', color:'#bb4c60', align:'center', weight:'bold', lineHeight:1.12 },
         subTitle:  { font:'cheoeumcheoreom-210', size:'32px', color:'#d57b8a', align:'center', weight:'bold', lineHeight:1.12, letterSpacing:'1.05px' },
         time:      { font:'Rebecca', size:'34px', color:'#bb4c60', align:'center', weight:'normal' },
         amPm:      { font:'', size:'0px', color:'#f8f9f2', align:'center', weight:'bold' },
@@ -351,7 +365,6 @@
         dateRangeStart:{ font:'', size:'0px', color:'#395541', align:'center', weight:'normal' },
         dateRangeEnd:  { font:'', size:'0px', color:'#395541', align:'center', weight:'normal' }
       },
-      textMaxWidth: 400,
       innerCoords: {
         mon: { dateOn:[242,68], dateOff:[242,68], title:[242,200], sub:[242,317], time:[242,402], icon:[401,70], amPm:[69,96] },
         tue: { dateOn:[242,68], dateOff:[242,68], title:[242,200], sub:[242,317], time:[242,402], icon:[401,70], amPm:[69,96] },
@@ -369,13 +382,13 @@
       artistBgUse: true, artistBgAlign:'right', artistPadding:[30,23], artistBgSlice:[46,46],
       artByText: 'Art by', showArtBy: true,
       dayConfig: {
-        mon: { boxCoords:[68,1091],   boxSize:[486,469], boxOn:'image_h/day_mon_on.png', boxOff:'image_h/day_mon_off.png' },
-        tue: { boxCoords:[528,1091],  boxSize:[486,469], boxOn:'image_h/day_tue_on.png', boxOff:'image_h/day_tue_off.png' },
-        wed: { boxCoords:[988,1091],  boxSize:[486,469], boxOn:'image_h/day_wed_on.png', boxOff:'image_h/day_wed_off.png' },
-        thu: { boxCoords:[1448,1091], boxSize:[486,469], boxOn:'image_h/day_thu_on.png', boxOff:'image_h/day_thu_off.png' },
-        fri: { boxCoords:[124,1531],  boxSize:[589,428], boxOn:'image_h/day_fri_on.png', boxOff:'image_h/day_fri_off.png' },
-        sat: { boxCoords:[706,1531],  boxSize:[589,428], boxOn:'image_h/day_sat_on.png', boxOff:'image_h/day_sat_off.png' },
-        sun: { boxCoords:[1286,1531], boxSize:[589,428], boxOn:'image_h/day_sun_on.png', boxOff:'image_h/day_sun_off.png' }
+        mon: { boxCoords:[68,1091],   boxSize:[486,469], boxOn:'image_h/day_mon_on.png', boxOff:'image_h/day_mon_off.png', textMaxWidth:430 },
+        tue: { boxCoords:[528,1091],  boxSize:[486,469], boxOn:'image_h/day_tue_on.png', boxOff:'image_h/day_tue_off.png', textMaxWidth:430 },
+        wed: { boxCoords:[988,1091],  boxSize:[486,469], boxOn:'image_h/day_wed_on.png', boxOff:'image_h/day_wed_off.png', textMaxWidth:430 },
+        thu: { boxCoords:[1448,1091], boxSize:[486,469], boxOn:'image_h/day_thu_on.png', boxOff:'image_h/day_thu_off.png', textMaxWidth:430 },
+        fri: { boxCoords:[124,1531],  boxSize:[589,428], boxOn:'image_h/day_fri_on.png', boxOff:'image_h/day_fri_off.png', textMaxWidth:520 },
+        sat: { boxCoords:[706,1531],  boxSize:[589,428], boxOn:'image_h/day_sat_on.png', boxOff:'image_h/day_sat_off.png', textMaxWidth:520 },
+        sun: { boxCoords:[1286,1531], boxSize:[589,428], boxOn:'image_h/day_sun_on.png', boxOff:'image_h/day_sun_off.png', textMaxWidth:520 }
       }
     };
 
@@ -388,7 +401,7 @@
         topDay:    { font:'cheoeumcheoreom-210', size:'54px', color:'#fffafa', align:'center', weight:'bold', shadow:{color:'#ad4a5e',blur:6,x:0,y:1} },
         dayDateOn: { font:'Rebecca', size:'60px', color:'#b44b5f', align:'center', weight:'normal' },
         dayDateOff:{ font:'Rebecca', size:'60px', color:'#fde9be', align:'center', weight:'normal' },
-        mainTitle: { font:'cheoeumcheoreom-210', size:'41px', color:'#b44b5f', align:'center', weight:'bold' },
+        mainTitle: { font:'cheoeumcheoreom-210', size:'46px', color:'#b44b5f', align:'center', weight:'bold' },
         subTitle:  { font:'cheoeumcheoreom-210', size:'32px', color:'#ce7a89', align:'center', weight:'bold' },
         time:      { font:'Rebecca', size:'32px', color:'#bb4c60', align:'center', weight:'normal' },
         amPm:      { font:'cheoeumcheoreom-210', size:'0px', color:'#f8f9f2', align:'center', weight:'bold' },
@@ -398,10 +411,10 @@
         dateRangeStart:{ font:'cheoeumcheoreom-210', size:'0px', color:'#395541', align:'center', weight:'normal' },
         dateRangeEnd:  { font:'', size:'0px', color:'#395541', align:'center', weight:'normal' }
       },
-      textMaxWidth: 532,
+      textMaxWidth: 560,
       innerCoords: {
         dateOn:[112,118], dateOff:[112,118],
-        title:[537,92], sub:[537,141], time:[918,111], icon:[819,90], amPm:[-100,-100]
+        title:[535,92], sub:[537,141], time:[918,111], icon:[819,90], amPm:[-100,-100]
       },
       topDateCoords: { startMonth:[390,437], startDate:[488,437], endMonth:[744,437], endDate:[842,437] },
       dateRangeStartCoords: [273,289], dateRangeEndCoords: [513,289],
@@ -411,13 +424,13 @@
       artistBgUse: true, artistBgAlign:'right', artistPadding:[24,23], artistBgSlice:[46,46],
       artByText: ' Art by', showArtBy: true,
       dayConfig: {
-        mon: { boxCoords:[73,484],  boxSize:[1014,228], boxOn:'image_v/day_mon_on.png', boxOff:'image_v/day_mon_off.png' },
-        tue: { boxCoords:[73,682],  boxSize:[1014,228], boxOn:'image_v/day_tue_on.png', boxOff:'image_v/day_tue_off.png' },
-        wed: { boxCoords:[73,880],  boxSize:[1014,228], boxOn:'image_v/day_wed_on.png', boxOff:'image_v/day_wed_off.png' },
-        thu: { boxCoords:[73,1078], boxSize:[1014,228], boxOn:'image_v/day_thu_on.png', boxOff:'image_v/day_thu_off.png' },
-        fri: { boxCoords:[73,1276], boxSize:[1014,228], boxOn:'image_v/day_fri_on.png', boxOff:'image_v/day_fri_off.png' },
-        sat: { boxCoords:[73,1474], boxSize:[1014,228], boxOn:'image_v/day_sat_on.png', boxOff:'image_v/day_sat_off.png' },
-        sun: { boxCoords:[73,1672], boxSize:[1014,228], boxOn:'image_v/day_sun_on.png', boxOff:'image_v/day_sun_off.png' }
+        mon: { boxCoords:[73,484],  boxSize:[1014,228], boxOn:'image_v/day_mon_on.png', boxOff:'image_v/day_mon_off.png', textMaxWidth:560 },
+        tue: { boxCoords:[73,682],  boxSize:[1014,228], boxOn:'image_v/day_tue_on.png', boxOff:'image_v/day_tue_off.png', textMaxWidth:560 },
+        wed: { boxCoords:[73,880],  boxSize:[1014,228], boxOn:'image_v/day_wed_on.png', boxOff:'image_v/day_wed_off.png', textMaxWidth:560 },
+        thu: { boxCoords:[73,1078], boxSize:[1014,228], boxOn:'image_v/day_thu_on.png', boxOff:'image_v/day_thu_off.png', textMaxWidth:560 },
+        fri: { boxCoords:[73,1276], boxSize:[1014,228], boxOn:'image_v/day_fri_on.png', boxOff:'image_v/day_fri_off.png', textMaxWidth:560 },
+        sat: { boxCoords:[73,1474], boxSize:[1014,228], boxOn:'image_v/day_sat_on.png', boxOff:'image_v/day_sat_off.png', textMaxWidth:560 },
+        sun: { boxCoords:[73,1672], boxSize:[1014,228], boxOn:'image_v/day_sun_on.png', boxOff:'image_v/day_sun_off.png', textMaxWidth:560 }
       }
     };
 
@@ -437,6 +450,12 @@
       /* canvas 크기 재설정 */
       canvas.width  = config.canvasW;
       canvas.height = config.canvasH;
+
+      /* maxWidth 입력 패널 동기화 */
+      ['mon','tue','wed','thu','fri','sat','sun'].forEach(d=>{
+        const el=document.getElementById('mw_'+d); if(!el)return;
+        el.value=config.dayConfig[d].textMaxWidth!=null?config.dayConfig[d].textMaxWidth:(config.textMaxWidth||400);
+      });
 
       /* 일러스트 위치 재계산 (업로드된 경우) */
       if (uploadedIllust) {
@@ -614,6 +633,34 @@
       drawSchedule();
     }
 
+    /* ══ 폰트 사이즈 프리픽스 파싱 [-n] / [+n] ══ */
+    function parseFontPrefix(text, baseStyle) {
+      const m = text.match(/^\[([-+]\d+)\]/);
+      if (!m) return { text, style: baseStyle };
+      const delta = parseInt(m[1]);
+      const rawSize = parseInt(baseStyle.size);
+      const newSize = Math.max(1, rawSize + delta) + 'px';
+      return {
+        text: text.slice(m[0].length),
+        style: Object.assign({}, baseStyle, { size: newSize })
+      };
+    }
+
+    /* ══ 요일별 textMaxWidth 적용 ══ */
+    function applyMaxWidth() {
+      const days = ['mon','tue','wed','thu','fri','sat','sun'];
+      days.forEach(day => {
+        const el = document.getElementById('mw_' + day);
+        if (!el) return;
+        const val = parseInt(el.value);
+        if (!isNaN(val) && val >= 50) {
+          configH.dayConfig[day].textMaxWidth = val;
+          configV.dayConfig[day].textMaxWidth = val;
+        }
+      });
+      saveData(); drawSchedule();
+    }
+
     /* ══ 텍스트 그리기 유틸 ══ */
     function drawSingleText(context,text,x,y,style) {
       const rad = style.rotate ? style.rotate*Math.PI/180 : 0;
@@ -731,10 +778,62 @@
 
           if (isOnline) {
             const _ic=config.innerCoords[day]||config.innerCoords;
+            const dayMaxWidth = dc.textMaxWidth != null ? dc.textMaxWidth : config.textMaxWidth;
             const main=document.getElementById(day).value;
-            if (main) wrapText(ctx,main,boxX+_ic.title[0],boxY+_ic.title[1],config.textMaxWidth,config.textStyles.mainTitle);
             const sub=document.getElementById(day+'_sub').value;
-            if (sub) wrapText(ctx,sub,boxX+_ic.sub[0],boxY+_ic.sub[1],config.textMaxWidth,config.textStyles.subTitle);
+
+            /* ── 세로형: 메인+서브 블록을 박스 가로 중앙 & 세로 중앙 정렬 ── */
+            if (currentLayout === 'v' && (main || sub)) {
+              const {text:mt, style:ms} = main ? parseFontPrefix(main, config.textStyles.mainTitle) : {text:'', style:config.textStyles.mainTitle};
+              const {text:st, style:ss} = sub  ? parseFontPrefix(sub,  config.textStyles.subTitle)  : {text:'', style:config.textStyles.subTitle};
+
+              /* 각 텍스트 블록의 줄 수 계산 */
+              function countLines(text, style, mw) {
+                if (!text) return 0;
+                ctx.font = style.weight+' '+style.size+' "'+style.font+'"';
+                if ('letterSpacing' in ctx) ctx.letterSpacing = style.letterSpacing||'0px';
+                const paragraphs = text.split('//').map(p=>p.trim());
+                let lines = 0;
+                for (const para of paragraphs) {
+                  const chars=[...para]; let line='';
+                  for (const ch of chars) { const test=line+ch; if(ctx.measureText(test).width>mw&&line.length>0){lines++;line=ch;}else{line=test;} }
+                  if (line.length>0) lines++;
+                }
+                if ('letterSpacing' in ctx) ctx.letterSpacing='0px';
+                return lines;
+              }
+
+              const mainLH = parseInt(ms.size)*(ms.lineHeight||1.4);
+              const subLH  = parseInt(ss.size)*(ss.lineHeight||1.4);
+              const mainLines = main ? countLines(mt, ms, dayMaxWidth) : 0;
+              const subLines  = sub  ? countLines(st, ss, dayMaxWidth) : 0;
+              const GAP = sub && main ? 0 : 0; /* 메인과 서브 사이 간격 */
+
+              const mainBlockH = mainLines > 0 ? mainLH * mainLines : 0;
+              const subBlockH  = subLines  > 0 ? subLH  * subLines  : 0;
+              const totalH = mainBlockH + (GAP) + subBlockH;
+
+              /* 박스 세로 중앙 기준 Y */
+              const boxCenterY = boxY + dc.boxSize[1] / 2;
+              const blockStartY = boxCenterY - totalH / 2;
+
+              /* 가로 중앙 X: 세로형 innerCoords의 title X 사용 */
+              const centerX = boxX + _ic.title[0];
+
+              if (main) {
+                const mainCenterY = blockStartY + mainBlockH / 2;
+                wrapText(ctx, mt, centerX, mainCenterY, dayMaxWidth, ms);
+              }
+              if (sub) {
+                const subCenterY = blockStartY + mainBlockH + GAP + subBlockH / 2;
+                wrapText(ctx, st, centerX, subCenterY, dayMaxWidth, ss);
+              }
+            } else {
+              /* 가로형: 기존 방식 유지 */
+              if (main) { const {text:mt,style:ms}=parseFontPrefix(main,config.textStyles.mainTitle); wrapText(ctx,mt,boxX+_ic.title[0],boxY+_ic.title[1],dayMaxWidth,ms); }
+              if (sub)  { const {text:st,style:ss}=parseFontPrefix(sub, config.textStyles.subTitle);  wrapText(ctx,st,boxX+_ic.sub[0],  boxY+_ic.sub[1],  dayMaxWidth,ss); }
+            }
+
             const time=document.getElementById(day+'_time').value;
             if (time) drawSingleText(ctx,time,boxX+_ic.time[0],boxY+_ic.time[1],config.textStyles.time);
             const icon=iconMap[document.getElementById(day+'_platform').value];
@@ -781,6 +880,7 @@
       document.querySelectorAll('.sched-input,.sched-select').forEach(el=>{data[el.id]=el.value;});
       document.querySelectorAll('.sched-toggle').forEach(chk=>{data[chk.id]=chk.checked;});
       data.illust=illustBase64; data.imgState=imgState; data.layout=currentLayout;
+
       try{ localStorage.setItem('scheduleDataFinal',JSON.stringify(data)); }
       catch{ data.illust=null; localStorage.setItem('scheduleDataFinal',JSON.stringify(data)); if(showAlert)alert("첨부된 이미지 용량이 커서 브라우저에 임시 저장할 수 없습니다."); }
     }
@@ -933,6 +1033,11 @@
     /* ══ 초기화 ══ */
     window.onload = function() {
       setupDropZone(); setupCanvasDrag();
+      /* maxWidth 입력 초기값 세팅 */
+      ['mon','tue','wed','thu','fri','sat','sun'].forEach(d=>{
+        const el=document.getElementById('mw_'+d); if(!el)return;
+        el.value=configH.dayConfig[d].textMaxWidth!=null?configH.dayConfig[d].textMaxWidth:400;
+      });
       const saved=localStorage.getItem('scheduleDataFinal');
       if (saved) loadData();
       else ['mon','tue','wed','thu','fri','sat','sun'].forEach(day=>toggleInputs(day));
